@@ -1,0 +1,79 @@
+# E-Commerse CQRS Implementation
+services:
+
+    product-query-db:
+        container_name: product-query-db
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: e-commerce-db
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            PGDATA: /data/postgres
+        networks:
+            - e-commerce-cqrs
+        ports:
+            - 5432:5432
+
+    product-command-db:
+        container_name: product-command-db
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: e-commerce-db
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            PGDATA: /data/postgres
+        networks:
+            - e-commerce-cqrs
+        ports:
+            - 5433:5432
+    
+    product-command-service:
+        build: './product-command-service'
+        container_name: product-command-service
+        depends_on:
+            - kafka
+            - product-command-db
+        networks:
+            - e-commerce-cqrs
+        ports:
+            - 9090:9090
+
+    product-query-service:
+        build: './product-query-service'
+        container_name: product-query-service
+        depends_on:
+            - kafka
+            - product-query-db
+        networks:
+            - e-commerce-cqrs
+        ports:
+            - 9091:9091
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.4.4
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+        ports:
+            - 22181:2181
+        networks:
+            - e-commerce-cqrs
+    
+    kafka:
+        image: confluentinc/cp-kafka:7.4.4
+        depends_on:
+            - zookeeper
+        ports:
+            - 29092:29092
+        networks:
+            - e-commerce-cqrs
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092, PLAINTEXT_HOST://kafka:29092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+networks:
+    e-commerce-cqrs:
+

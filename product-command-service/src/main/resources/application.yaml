@@ -1,0 +1,23 @@
+# Configure service port
+server:
+  port: 9090
+
+# Datasource properties
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://product-command-db:5432/e-commerce-db # createDatabaseIfNotExist=true does not work for Postgres
+    username: root
+    password: root
+  jpa:
+    show-sql: true
+    hibernate.ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: OFF
